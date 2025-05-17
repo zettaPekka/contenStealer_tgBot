@@ -1,4 +1,10 @@
 __pycache__/
 .env
 .venv/
+<<<<<<< HEAD
 *.db
+=======
+*.db
+*.session
+*.session-journal
+>>>>>>> 67b5439b8139ada15e44b066be25f3708c8c02a2
