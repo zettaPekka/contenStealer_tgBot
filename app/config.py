@@ -1,1 +1,2 @@
-my_channels_ids = {'':''}
+MY_CHANNELS_IDS = {'':''}
+WATCHED_CHANNELS= ['']
