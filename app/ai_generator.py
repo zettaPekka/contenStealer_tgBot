@@ -1,6 +1,10 @@
-import os
 from mistralai import Mistral
+from dotenv import load_dotenv
 
+import os
+
+
+load_dotenv()
 
 api_key = os.environ.get('AI_KEY')
 model = 'mistral-large-latest'
@@ -22,4 +26,17 @@ async def generate_post_text(before_text: str, additional_data: str = ''):
         )
         return chat_response.choices[0].message.content
     except:
-        return 'Ошибка'
+        try:
+            chat_response = await client.chat.complete_async(
+                model = model,
+                messages = [
+                    {
+                        'role': 'user',
+                        'content': prompt,
+                    },
+                ],
+                max_tokens=1500
+            )
+            return chat_response.choices[0].message.content
+        except:
+            return 'Ошибка'
