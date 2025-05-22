@@ -21,7 +21,6 @@ API_HASH = os.environ.get('API_HASH')
 BOT_TOKEN = os.environ.get('BOT_TOKEN')
 ADMIN_CHAT_ID = os.environ.get('ADMIN_CHAT_ID')
 
-
 telethon_client = TelegramClient(
     'telethon_session',
     API_ID,
@@ -39,7 +38,7 @@ async def send_to_admin(text: Union[str, None], photo: bytes = None, video: byte
                                         photo=file, 
                                         caption=answer_text, 
                                         reply_markup=edit_kb, 
-                                        parse_mode=ParseMode.MARKDOWN)
+                                        parse_mode=None)
     elif video:
         answer_text = await generate_post_text(text) if text else ''
         file = BufferedInputFile(video, filename='video.mp4')
@@ -47,13 +46,13 @@ async def send_to_admin(text: Union[str, None], photo: bytes = None, video: byte
                                         video=file,
                                         caption=answer_text, 
                                         reply_markup=edit_kb,
-                                        parse_mode=ParseMode.MARKDOWN)
+                                        parse_mode=None)
     else:
         answer_text = await generate_post_text(text) if text else ''
         await bot_aiogram.send_message(ADMIN_CHAT_ID,
                                         text=answer_text, 
                                         reply_markup=edit_kb,
-                                        parse_mode=ParseMode.MARKDOWN)
+                                        parse_mode=None)
 
 
 @telethon_client.on(events.NewMessage(chats=WATCHED_CHANNELS))
@@ -72,6 +71,9 @@ async def handler(event):
         video_bytes = await telethon_client.download_media(message.video, bytes)
 
     text = message.text if message.text else None
+    
+    text = text.replace('**', '*') if text else None
+    text = text.replace('__', '_') if text else None
 
     await send_to_admin(text=text, photo=photo_bytes, video=video_bytes)
 

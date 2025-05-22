@@ -23,7 +23,7 @@ load_dotenv()
 async def start_handler(message: Message):
     if message.from_user.id != int(os.getenv('ADMIN_CHAT_ID')):
         return
-    await message.answer('Добро пожаловать бота стилера контента. Не желательно удалять контент, который был сгенерирован ботом.')
+    await message.answer('Добро пожаловать бота стилера контента. Не желательно удалять контент, который был сгенерирован ботом._')
 
 
 @user_router.callback_query(F.data == 'regenerate')
@@ -50,18 +50,23 @@ async def regenerate_handler(message: Message, state: FSMContext):
     
     data = await state.get_data()
     answer_text = await generate_post_text(before_text=data['post_text'], additional_data=message.text)
-
-    if data['photo'] is None and data['video'] is None:
+    answer_text = answer_text.replace('**', '*')
+    answer_text = answer_text.replace('__', '_')
+    
+    if answer_text == 'Ошибка':
+        await message.answer('Ошибка')
+    elif data['photo'] is None and data['video'] is None:
         await bot.edit_message_text(chat_id=message.chat.id,
                                     message_id=data['message_id'], 
-                                    text=answer_text, reply_markup=edit_kb,
-                                    parse_mode=ParseMode.MARKDOWN)
+                                    text=answer_text,
+                                    reply_markup=edit_kb,
+                                    parse_mode=None)
     else:
         await bot.edit_message_caption(chat_id=message.chat.id, 
                                         message_id=data['message_id'],
                                         caption=answer_text, 
                                         reply_markup=edit_kb,
-                                        parse_mode=ParseMode.MARKDOWN)
+                                        parse_mode=None)
     
     await waiting_message.delete() 
     await message.delete()
@@ -77,7 +82,7 @@ async def delete_media_handler(callback: CallbackQuery):
         await callback.message.answer(callback.message.caption, reply_markup=callback.message.reply_markup)
         await callback.message.delete()
     except:
-        await callback.message.answer('Ошибка')
+        await callback.message.answer('Ошибка, скорее всего это не медиа')
 
 
 @user_router.callback_query(F.data == 'post')
@@ -102,14 +107,17 @@ async def posting(callback: CallbackQuery, state: FSMContext):
     if data['photo'] is not None:
         await bot.send_photo(chat_id=channel_id, 
                                 photo=data['photo'][-1].file_id,
-                                caption=data['content'])
+                                caption=data['content'],
+                                parse_mode=ParseMode.MARKDOWN)
     elif data['video'] is not None:
         await bot.send_video(chat_id=channel_id, 
                                 video=data['video'].file_id, 
-                                caption=data['content'])
+                                caption=data['content'],
+                                parse_mode=ParseMode.MARKDOWN)
     else:
         await bot.send_message(chat_id=channel_id, 
-                                text=data['content'])
+                                text=data['content'],
+                                parse_mode=ParseMode.MARKDOWN)
 
     await callback.message.delete()
     await state.clear()
